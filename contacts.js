@@ -1,4 +1,4 @@
-const crypto = require('node:crypto');
+const { nanoid } = require('nanoid');
 const fs = require('node:fs/promises');
 const path = require('path');
 
@@ -36,7 +36,7 @@ async function removeContact(contactId) {
 
 async function addContact(name, email, phone) {
   const contacts = await readContacts();
-  const newContact = { name, email, phone, id: crypto.randomUUID() };
+  const newContact = { name, email, phone, id: nanoid() };
   contacts.push(newContact);
   await writeContacts(contacts);
   return newContact;
