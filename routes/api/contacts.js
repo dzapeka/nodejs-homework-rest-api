@@ -4,37 +4,60 @@ const path = require('path');
 const contactsSchema = require(path.join(__dirname, '../../schemas/contacts'));
 const Contacts = require(path.join(__dirname, '../../contacts.js'));
 
+const validateContactSchema = (schema, body) => {
+  const response = schema.validate(body, { abortEarly: false });
+  return typeof response.error === 'undefined'
+    ? null
+    : response.error.details.map(err => err.message).join(', ');
+};
+
 router.get('/', async (req, res, next) => {
-  res.json(await Contacts.getAllContacts());
+  try {
+    const allContacts = await Contacts.getAllContacts();
+    res.json(allContacts);
+  } catch (error) {
+    next(error);
+  }
 });
 
 router.get('/:contactId', async (req, res, next) => {
   const { contactId } = req.params;
-  const contact = await Contacts.getContactById(contactId);
-  if (!contact) return res.status(404).json({ message: 'Not found' });
-  res.json(contact);
+  try {
+    const contact = await Contacts.getContactById(contactId);
+    if (!contact) return res.status(404).json({ message: 'Not found' });
+    res.json(contact);
+  } catch (error) {
+    next(error);
+  }
 });
 
 router.post('/', async (req, res, next) => {
-  const response = contactsSchema.validate(req.body, { abortEarly: false });
+  const validationError = validateContactSchema(contactsSchema, req.body);
 
-  if (typeof response.error !== 'undefined') {
-    return res
-      .status(400)
-      .send(response.error.details.map(err => err.message).join(', '));
+  if (validationError) {
+    return res.status(400).send(validationError);
   }
 
-  const { name, email, phone } = response.value;
-  const newContact = await Contacts.addContact(name, email, phone);
+  const { name, email, phone } = req.body;
 
-  res.status(201).json(newContact);
+  try {
+    const newContact = await Contacts.addContact(name, email, phone);
+    res.status(201).json(newContact);
+  } catch (error) {
+    next(error);
+  }
 });
 
 router.delete('/:contactId', async (req, res, next) => {
   const { contactId } = req.params;
-  const deletedContact = await Contacts.removeContact(contactId);
-  if (!deletedContact) return res.status(404).json({ message: 'Not found' });
-  res.json({ message: 'contact deleted' });
+
+  try {
+    const deletedContact = await Contacts.removeContact(contactId);
+    if (!deletedContact) return res.status(404).json({ message: 'Not found' });
+    res.json({ message: 'Contact deleted' });
+  } catch (error) {
+    next(error);
+  }
 });
 
 router.put('/:contactId', async (req, res, next) => {
@@ -44,21 +67,19 @@ router.put('/:contactId', async (req, res, next) => {
     return res.status(400).json({ message: 'missing fields' });
   }
 
-  const response = contactsSchema.validate(req.body, { abortEarly: false });
-  if (typeof response.error !== 'undefined') {
-    return res
-      .status(400)
-      .send(response.error.details.map(err => err.message).join(', '));
+  const validationError = validateContactSchema(contactsSchema, req.body);
+
+  if (validationError) {
+    return res.status(400).send(validationError);
   }
 
-  const updatedContact = await Contacts.updateContact(
-    contactId,
-    response.value
-  );
-
-  if (!updatedContact) return res.status(404).json({ message: 'Not found' });
-
-  res.json(updatedContact);
+  try {
+    const updatedContact = await Contacts.updateContact(contactId, req.body);
+    if (!updatedContact) return res.status(404).json({ message: 'Not found' });
+    res.json(updatedContact);
+  } catch (error) {
+    next(error);
+  }
 });
 
 module.exports = router;
