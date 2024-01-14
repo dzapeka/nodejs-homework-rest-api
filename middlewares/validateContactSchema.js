@@ -1,7 +1,8 @@
 const {
   contactCreateSchema,
   contactUpdateSchema,
-} = require('../schemas/contacts');
+  contactFavoriteStatusSchema,
+} = require('../validations/contactsValidation');
 
 const validateContactSchema = schema => {
   return (req, res, next) => {
@@ -22,4 +23,7 @@ const validateContactSchema = schema => {
 module.exports = {
   validateContactCreateSchema: validateContactSchema(contactCreateSchema),
   validateContactUpdateSchema: validateContactSchema(contactUpdateSchema),
+  validateContactFavoriteStatusSchema: validateContactSchema(
+    contactFavoriteStatusSchema
+  ),
 };

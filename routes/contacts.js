@@ -4,6 +4,7 @@ const ContactController = require('../controllers/contact');
 const {
   validateContactCreateSchema,
   validateContactUpdateSchema,
+  validateContactFavoriteStatusSchema,
 } = require('../middlewares/validateContactSchema');
 
 router.get('/', ContactController.listContacts);
@@ -20,6 +21,10 @@ router.put(
   ContactController.updateContact
 );
 
-router.patch('/:contactId/favorite', ContactController.updateStatusContact);
+router.patch(
+  '/:contactId/favorite',
+  validateContactFavoriteStatusSchema,
+  ContactController.updateStatusContact
+);
 
 module.exports = router;

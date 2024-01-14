@@ -1,8 +1,8 @@
-const Contact = require('../models/contact');
+const ContactService = require('../service/contact.js');
 
 async function listContacts(req, res, next) {
   try {
-    const contacts = await Contact.find();
+    const contacts = await ContactService.getAll();
     res.send(contacts);
   } catch (e) {
     next(e);
@@ -13,7 +13,7 @@ async function getContactById(req, res, next) {
   const { contactId } = req.params;
 
   try {
-    const contact = await Contact.findById(contactId);
+    const contact = await ContactService.getById(contactId);
     if (!contact)
       return res.status(404).json({
         status: 'error',
@@ -31,7 +31,7 @@ async function removeContact(req, res, next) {
   const { contactId } = req.params;
 
   try {
-    const deletedContact = await Contact.findByIdAndDelete(contactId);
+    const deletedContact = await ContactService.remove(contactId);
     if (!deletedContact) return res.status(404).json({ message: 'Not found' });
     res.json({ message: 'Contact deleted' });
   } catch (error) {
@@ -43,7 +43,7 @@ async function addContact(req, res, next) {
   const { name, email, phone } = req.body;
 
   try {
-    const result = await Contact.create({ name, email, phone });
+    const result = await ContactService.create({ name, email, phone });
     res.status(201).json(result);
   } catch (e) {
     next(e);
@@ -54,9 +54,7 @@ async function updateContact(req, res, next) {
   const { contactId } = req.params;
 
   try {
-    const result = await Contact.findByIdAndUpdate(contactId, req.body, {
-      new: true,
-    });
+    const result = await ContactService.update(contactId, req.body);
     if (!result) return res.status(404).json({ message: 'Not found' });
     res.json(result);
   } catch (error) {
@@ -67,12 +65,9 @@ async function updateStatusContact(req, res, next) {
   const { contactId } = req.params;
 
   try {
-    const result = await Contact.findByIdAndUpdate(
+    const result = await ContactService.updateFavoriteStatus(
       contactId,
-      {
-        favorite: req.body.favorite,
-      },
-      { new: true }
+      req.body.favorite
     );
 
     if (!result) return res.status(404).json({ message: 'Not found' });
