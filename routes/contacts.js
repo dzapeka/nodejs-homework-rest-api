@@ -2,28 +2,28 @@ const express = require('express');
 const router = express.Router();
 const ContactController = require('../controllers/contact');
 const {
-  validateContactCreateSchema,
-  validateContactUpdateSchema,
-  validateContactFavoriteStatusSchema,
+  validateContactCreate,
+  validateContactUpdate,
+  validateContactFavoriteStatus,
 } = require('../middlewares/validateContactSchema');
 
 router.get('/', ContactController.listContacts);
 
 router.get('/:contactId', ContactController.getContactById);
 
-router.post('/', validateContactCreateSchema, ContactController.addContact);
+router.post('/', validateContactCreate, ContactController.addContact);
 
 router.delete('/:contactId', ContactController.removeContact);
 
 router.put(
   '/:contactId',
-  validateContactUpdateSchema,
+  validateContactUpdate,
   ContactController.updateContact
 );
 
 router.patch(
   '/:contactId/favorite',
-  validateContactFavoriteStatusSchema,
+  validateContactFavoriteStatus,
   ContactController.updateStatusContact
 );
 

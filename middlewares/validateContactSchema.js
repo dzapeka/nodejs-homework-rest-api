@@ -4,7 +4,7 @@ const {
   contactFavoriteStatusSchema,
 } = require('../validations/contactsValidation');
 
-const validateContactSchema = schema => {
+const validateContact = schema => {
   return (req, res, next) => {
     if (Object.keys(req.body).length === 0) {
       return res.status(400).json({ message: 'missing fields' });
@@ -21,9 +21,7 @@ const validateContactSchema = schema => {
 };
 
 module.exports = {
-  validateContactCreateSchema: validateContactSchema(contactCreateSchema),
-  validateContactUpdateSchema: validateContactSchema(contactUpdateSchema),
-  validateContactFavoriteStatusSchema: validateContactSchema(
-    contactFavoriteStatusSchema
-  ),
+  validateContactCreate: validateContact(contactCreateSchema),
+  validateContactUpdate: validateContact(contactUpdateSchema),
+  validateContactFavoriteStatus: validateContact(contactFavoriteStatusSchema),
 };
