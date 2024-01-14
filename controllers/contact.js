@@ -1,15 +1,4 @@
 const Contact = require('../models/contact');
-const {
-  contactCreateSchema,
-  contactUpdateSchema,
-} = require('../schemas/contacts');
-
-const validateContactSchema = (schema, body) => {
-  const response = schema.validate(body, { abortEarly: false });
-  return typeof response.error === 'undefined'
-    ? null
-    : response.error.details.map(err => err.message).join(', ');
-};
 
 async function listContacts(req, res, next) {
   try {
@@ -51,12 +40,6 @@ async function removeContact(req, res, next) {
 }
 
 async function addContact(req, res, next) {
-  const validationError = validateContactSchema(contactCreateSchema, req.body);
-
-  if (validationError) {
-    return res.status(400).send(validationError);
-  }
-
   const { name, email, phone } = req.body;
 
   try {
@@ -69,16 +52,6 @@ async function addContact(req, res, next) {
 
 async function updateContact(req, res, next) {
   const { contactId } = req.params;
-
-  if (Object.keys(req.body).length === 0) {
-    return res.status(400).json({ message: 'missing fields' });
-  }
-
-  const validationError = validateContactSchema(contactUpdateSchema, req.body);
-
-  if (validationError) {
-    return res.status(400).send(validationError);
-  }
 
   try {
     const result = await Contact.findByIdAndUpdate(contactId, req.body, {
