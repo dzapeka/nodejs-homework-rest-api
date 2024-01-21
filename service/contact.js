@@ -6,44 +6,45 @@ function isValidId(id) {
   return mongoose.Types.ObjectId.isValid(id);
 }
 
-async function getAll() {
-  return await Contact.find();
+async function getAll(userId) {
+  return await Contact.find({ owner: userId });
 }
 
-async function getById(contactId) {
+async function getById(userId, contactId) {
   if (!isValidId(contactId)) {
     return null;
   }
-  return await Contact.findById(contactId);
+  return await Contact.findOne({ _id: contactId, owner: userId });
 }
 
-async function remove(contactId) {
+async function remove(userId, contactId) {
   if (!isValidId(contactId)) {
     return null;
   }
-  return Contact.findByIdAndDelete(contactId);
+
+  return Contact.findOneAndDelete({ _id: contactId, owner: userId });
 }
 
-async function create({ name, email, phone }) {
-  return await Contact.create({ name, email, phone });
+async function create({ name, email, phone, owner }) {
+  return await Contact.create({ name, email, phone, owner });
 }
 
-async function update(contactId, fields) {
+async function update(userId, contactId, fields) {
   if (!isValidId(contactId)) {
     return null;
   }
-  return Contact.findByIdAndUpdate(contactId, fields, {
+  return Contact.findOneAndUpdate({ _id: contactId, owner: userId }, fields, {
     new: true,
   });
 }
 
-async function updateFavoriteStatus(contactId, favorite) {
+async function updateFavoriteStatus(userId, contactId, favorite) {
   if (!isValidId(contactId)) {
     return null;
   }
 
-  return Contact.findByIdAndUpdate(
-    contactId,
+  return Contact.findOneAndUpdate(
+    { _id: contactId, owner: userId },
     {
       favorite: favorite,
     },
