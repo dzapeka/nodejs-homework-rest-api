@@ -2,7 +2,6 @@ const express = require('express');
 const logger = require('morgan');
 const cors = require('cors');
 
-const authRouter = require('./routes/auth');
 const routes = require('./routes');
 
 const app = express();
@@ -14,8 +13,8 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cors());
 app.use(express.json());
 
-app.use('/users', authRouter);
-app.use('/api', routes);
+app.use('/avatars', express.static('public/avatars'));
+app.use('/', routes);
 
 app.use((req, res) => {
   res.status(404).json({
@@ -27,6 +26,7 @@ app.use((req, res) => {
 });
 
 app.use((err, req, res) => {
+  console.error(err);
   res.status(500).json({
     message: err.message,
     status: 'fail',
