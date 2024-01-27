@@ -1,5 +1,4 @@
 const bcrypt = require('bcrypt');
-
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const { createAvatar } = require('../utils/gravatar');
@@ -56,7 +55,7 @@ async function login(req, res, next) {
     const token = jwt.sign(
       { id: user._id, name: user.name },
       process.env.JWT_SECRET,
-      { expiresIn: '2 days' } // "1h"
+      { expiresIn: '2 days' }
     );
 
     await User.findByIdAndUpdate(user._id, {
