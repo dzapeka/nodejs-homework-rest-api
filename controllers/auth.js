@@ -88,6 +88,7 @@ async function current(req, res, next) {
     res.send({
       email: currentUser.email,
       subscription: currentUser.subscription,
+      avatarURL: currentUser.avatarURL,
     });
   } catch (error) {
     next(error);

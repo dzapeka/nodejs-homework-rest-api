@@ -14,11 +14,11 @@ app.use(cors());
 app.use(express.json());
 
 app.use('/avatars', express.static('public/avatars'));
-app.use('/', routes);
+app.use('/api', routes);
 
 app.use((req, res) => {
   res.status(404).json({
-    message: 'Use api on routes: /api/contacts',
+    message: 'Not found',
     status: 'error',
     code: 404,
     data: 'Not found',

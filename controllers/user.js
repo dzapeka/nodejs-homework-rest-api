@@ -1,4 +1,4 @@
-const fs = require('node:fs/promises');
+const fs = require('node:fs');
 const path = require('node:path');
 
 const User = require('../models/user');
@@ -13,12 +13,12 @@ async function getAvatar(req, res, next) {
     if (user.avatarURL === null) {
       return res.status(404).send({ message: 'Avatar not found' });
     }
-    const avatarPath = path.join(
-      __dirname,
-      '..',
-      'public/avatars',
-      user.avatarURL
-    );
+
+    const avatarPath = path.join(__dirname, '..', 'public', user.avatarURL);
+
+    if (!fs.existsSync(avatarPath)) {
+      return res.status(404).send({ message: 'Avatar not found' });
+    }
 
     res.sendFile(avatarPath);
   } catch (error) {
@@ -38,7 +38,7 @@ async function uploadAvatar(req, res, next) {
       return res.status(400).send({ message: 'No file provided' });
     }
     try {
-      await fs.rename(
+      await fs.renameSync(
         req.file.path,
         path.join(__dirname, '..', 'public', 'avatars', req.file.filename)
       );
@@ -58,7 +58,7 @@ async function uploadAvatar(req, res, next) {
     // remove old avatars
     if (oldAvatarURL !== null) {
       try {
-        await fs.unlink(path.join(__dirname, '..', 'public', oldAvatarURL));
+        await fs.unlinkSync(path.join(__dirname, '..', 'public', oldAvatarURL));
       } catch (e) {
         console.error('Old avatar file can not be deleted', e.message);
       }

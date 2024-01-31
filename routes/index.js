@@ -10,6 +10,6 @@ const authMiddleware = require('../middlewares/auth');
 
 router.use('/users', authRouter);
 router.use('/users', authMiddleware, usersRouter);
-router.use('/api/contacts', authMiddleware, contactsRouter);
+router.use('/contacts', authMiddleware, contactsRouter);
 
 module.exports = router;
