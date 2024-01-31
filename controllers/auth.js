@@ -1,7 +1,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-
 const User = require('../models/user');
+const { createAvatar } = require('../utils/gravatar');
 
 async function register(req, res, next) {
   const { email, password } = req.body;
@@ -15,10 +15,21 @@ async function register(req, res, next) {
 
     const passwordHash = await bcrypt.hash(password, 10);
 
-    const result = await User.create({ email, password: passwordHash });
+    const avatarFileName = await createAvatar(email);
+    const avatarURL = `/avatars/${avatarFileName}`;
+
+    const result = await User.create({
+      email,
+      password: passwordHash,
+      avatarURL,
+    });
 
     res.status(201).send({
-      user: { email: result.email, subscription: result.subscription },
+      user: {
+        email: result.email,
+        subscription: result.subscription,
+        avatarURL,
+      },
     });
   } catch (error) {
     next(error);
@@ -44,7 +55,7 @@ async function login(req, res, next) {
     const token = jwt.sign(
       { id: user._id, name: user.name },
       process.env.JWT_SECRET,
-      { expiresIn: 60 * 60 } // "1h"
+      { expiresIn: '2 days' }
     );
 
     await User.findByIdAndUpdate(user._id, {
