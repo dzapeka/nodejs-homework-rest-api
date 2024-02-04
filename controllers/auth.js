@@ -1,7 +1,9 @@
 const bcrypt = require('bcrypt');
+const crypto = require('node:crypto');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const { createAvatar } = require('../utils/gravatar');
+const { sendVerificationEmail } = require('../helpers/sendEmail');
+const { createAvatar } = require('../helpers/gravatar');
 
 async function register(req, res, next) {
   const { email, password } = req.body;
@@ -18,10 +20,15 @@ async function register(req, res, next) {
     const avatarFileName = await createAvatar(email);
     const avatarURL = `/avatars/${avatarFileName}`;
 
+    const verificationToken = crypto.randomUUID();
+
+    await sendVerificationEmail(email, verificationToken);
+
     const result = await User.create({
       email,
       password: passwordHash,
       avatarURL,
+      verificationToken,
     });
 
     res.status(201).send({
@@ -50,6 +57,10 @@ async function login(req, res, next) {
 
     if (isMatch === false) {
       return res.status(401).send({ message: 'Email or password is wrong' });
+    }
+
+    if (user.verify === false) {
+      return res.status(403).send({ message: 'Email not verified' });
     }
 
     const token = jwt.sign(

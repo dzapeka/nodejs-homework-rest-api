@@ -1,7 +1,9 @@
+const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
 
 const User = require('../models/user');
+const { sendVerificationEmail } = require('../helpers/sendEmail');
 
 async function getAvatar(req, res, next) {
   try {
@@ -72,4 +74,59 @@ async function uploadAvatar(req, res, next) {
   }
 }
 
-module.exports = { getAvatar, uploadAvatar };
+async function verifyUserByToken(req, res, next) {
+  const verificationToken = req.params.verificationToken;
+
+  try {
+    const user = await User.findOne({ verificationToken });
+    if (user === null) {
+      return res.status(404).send({ message: 'User not found' });
+    }
+
+    await User.findByIdAndUpdate(user._id, {
+      verify: true,
+      verificationToken: null,
+    });
+
+    res.send({ message: 'Verification successful' });
+  } catch (e) {
+    next(e);
+  }
+}
+
+async function sendVerification(req, res, next) {
+  const { email } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (user === null) {
+      return res.status(404).send({ message: 'User not found' });
+    }
+
+    if (user.verify) {
+      return res
+        .status(400)
+        .json({ message: 'Verification has already been passed' });
+    }
+
+    const verificationToken = crypto.randomUUID();
+
+    await sendVerificationEmail(email, verificationToken);
+
+    await User.findByIdAndUpdate(user._id, {
+      verificationToken,
+    });
+
+    res.send({ message: 'Verification email sent' });
+  } catch (e) {
+    next(e);
+  }
+}
+
+module.exports = {
+  getAvatar,
+  uploadAvatar,
+  verifyUserByToken,
+  sendVerification,
+};
